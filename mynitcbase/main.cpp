@@ -93,8 +93,19 @@ void stage2_ex2(const char*relname,const char*attriname,const char* attr2name){
   // }
 
 }
-void stage3_p1(){
+void STAGE3_READING_FROM_CACHE(){
+    for(int rel_Id= RELCAT_RELID;rel_Id<=2;++rel_Id){
+      RelCatEntry relcatbuf;
+      RelCacheTable::getRelCatEntry(rel_Id,&relcatbuf);
+      printf("Relation: %s\n", relcatbuf.relName);
 
+      for (int j = 0; j<relcatbuf.numAttrs;j++){
+          AttrCatEntry attrcatbuf;
+          AttrCacheTable::getAttrCatEntry(rel_Id, j,&attrcatbuf);//attribute offset j
+          printf("  %s: %d\n", attrcatbuf.attrName, attrcatbuf.attrType);
+      }
+  
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -113,9 +124,10 @@ int main(int argc, char *argv[]) {
   // Disk::readBlock(buffer2, 7000);
   // memcpy(message2, buffer2 + 20, 6);
   // std::cout << message2;
-  stage2_ex1();
-  stage2_ex2("Students","Class","Batch");
+  // stage2_ex1();
+  // stage2_ex2("Students","Class","Batch");
   //stage3_p1();
+  STAGE3_READING_FROM_CACHE();
   // return FrontendInterface::handleFrontend(argc, argv);
   return 0;
 }
