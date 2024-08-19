@@ -17,10 +17,10 @@ RecId BlockAccess::linearSearch(int relId, char attrName[ATTR_SIZE], union Attri
 
         // get the first record block of the relation from the relation cache
         // (use RelCacheTable::getRelCatEntry() function of Cache Layer)
-        RelCatEntry*firstnode;
-        RelCacheTable::getRelCatEntry(relId,firstnode);
+        RelCatEntry firstnode;
+        RelCacheTable::getRelCatEntry(relId,&firstnode);
         // block = first record block of the relation
-        block=firstnode->firstBlk;
+        block=firstnode.firstBlk;
         slot=0;
         // slot = 0
     }
@@ -34,8 +34,8 @@ RecId BlockAccess::linearSearch(int relId, char attrName[ATTR_SIZE], union Attri
     block = prevRecId.block;
     slot = prevRecId.slot + 1;
     }
-      RelCatEntry*relCatBuffer;
-        RelCacheTable::getRelCatEntry(relId,relCatBuffer);
+      RelCatEntry relCatBuffer;
+        RelCacheTable::getRelCatEntry(relId,&relCatBuffer);
     /* The following code searches for the next record in the relation
        that satisfies the given condition
        We start from the record id (block, slot) and iterate over the remaining
@@ -57,7 +57,7 @@ RecId BlockAccess::linearSearch(int relId, char attrName[ATTR_SIZE], union Attri
     unsigned char *slotMap =(unsigned char *)malloc(sizeof(unsigned char) * header.numSlots);
     Buffer.getSlotMap(slotMap);
         // If slot >= the number of slots per block(i.e. no more slots in this block)
-        if(slot>=relCatBuffer->numSlotsPerBlk)
+        if(slot>=relCatBuffer.numSlotsPerBlk)
         {
             block=header.rblock;
             slot=0;
@@ -74,17 +74,24 @@ RecId BlockAccess::linearSearch(int relId, char attrName[ATTR_SIZE], union Attri
             continue;
             // increment slot and continue to the next record slot
         }
-
+            
         // compare record's attribute value to the the given attrVal as below:
         /*
             firstly get the attribute offset for the attrName attribute
             from the attribute cache entry of the relation using
             AttrCacheTable::getAttrCatEntry()
         */
+       AttrCatEntry attrcatbuff;
+       AttrCacheTable::getAttrCatEntry(relId,attrName,&attrcatbuff);
+       Attribute *record =(Attribute *)malloc(sizeof(Attribute) * header.numAttrs);
+       Buffer.getRecord(record, slot);
+       int attr_offset=attrcatbuff.offset;
         /* use the attribute offset to get the value of the attribute from
            current record */
-
-        int cmpVal;  // will store the difference between the attributes
+            
+        int cmpVal;
+        cmpVal=compareAttrs(record[attr_offset],attrVal,attrcatbuff.attrType); 
+         // will store the difference between the attributes
         // set cmpVal using compareAttrs()
 
         /* Next task is to check whether this record satisfies the given condition.
@@ -105,7 +112,10 @@ RecId BlockAccess::linearSearch(int relId, char attrName[ATTR_SIZE], union Attri
             the record id of the record that satisfies the given condition
             (use RelCacheTable::setSearchIndex function)
             */
-
+            RecId newIndex;
+            newIndex.block = block;
+            newIndex.slot = slot;
+            RelCacheTable::setSearchIndex(relId, &newIndex);
             return RecId{block, slot};
         }
 

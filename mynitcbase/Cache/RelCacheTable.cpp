@@ -18,9 +18,7 @@ int RelCacheTable::getRelCatEntry(int relId, RelCatEntry* relCatBuf) {
     return E_RELNOTOPEN;
   }
 
-  // copy the value to the relCatBuf argument
-  *relCatBuf = relCache[relId]->relCatEntry;
-
+  *relCatBuf = (relCache[relId]->relCatEntry);
   return SUCCESS;
 }
 

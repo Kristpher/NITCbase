@@ -260,6 +260,16 @@ void freeLinkedList(AttrCacheEntry* head) {
     head = nullptr; // Optional: set head to NULL
 }
 
+int OpenRelTable::getRelId(char relName[ATTR_SIZE]) {
+
+  // if relname is RELCAT_RELNAME, return RELCAT_RELID
+  // if relname is ATTRCAT_RELNAME, return ATTRCAT_RELID
+  for(int i=0;i<MAX_OPEN;i++){
+   if(strcmp(relName,RelCacheTable::relCache[i]->relCatEntry.relName)==0)
+    return i;
+  }
+  return E_RELNOTOPEN;
+}
 
 OpenRelTable::~OpenRelTable() {
   // free all the memory that you allocated in the constructor
@@ -278,6 +288,11 @@ OpenRelTable::~OpenRelTable() {
   }
 }
 
+/* This function will open a relation having name `relName`.
+Since we are currently only working with the relation and attribute catalog, we
+will just hardcode it. In subsequent stages, we will loop through all the relations
+and open the appropriate one.
+*/
 
 
 

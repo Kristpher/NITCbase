@@ -127,8 +127,8 @@ int main(int argc, char *argv[]) {
   // stage2_ex1();
   // stage2_ex2("Students","Class","Batch");
   //stage3_p1();
-  STAGE3_READING_FROM_CACHE();
-  // return FrontendInterface::handleFrontend(argc, argv);
+  //STAGE3_READING_FROM_CACHE();
+  return FrontendInterface::handleFrontend(argc, argv);
   return 0;
 }
 
