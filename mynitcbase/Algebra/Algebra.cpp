@@ -60,7 +60,7 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE], char attr
   // Before calling the search function, reset the search to start from the first hit
   // using RelCacheTable::resetSearchIndex()
   RelCacheTable::resetSearchIndex(srcRelId);
-  printf("%d\n",srcRelId);
+//   printf("%d\n",srcRelId);
   // get relCatEntry using RelCacheTable::getRelCatEntry()
   RelCatEntry relCatEntry;
 
@@ -88,11 +88,11 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE], char attr
 			RecBuffer Buffer(searchRes.block);
 			struct HeadInfo header;
 			Buffer.getHeader(&header);
-			int num_entries=header.numAttrs;
+			int num_attrs=header.numAttrs;
 		// get the record at searchRes using BlockBuffer.getRecord
-			Attribute Buffer_attr[num_entries];
+			Attribute Buffer_attr[num_attrs];
 			Buffer.getRecord(Buffer_attr,searchRes.slot);
-			for(int i=0;i<num_entries;i++) {
+			for(int i=0;i<num_attrs;i++) {
 				AttrCacheTable::getAttrCatEntry(srcRelId, i, &attrCatEntry);
 				if (attrCatEntry.attrType == NUMBER)
 					printf(" %d  |", (int)Buffer_attr[i].nVal);
