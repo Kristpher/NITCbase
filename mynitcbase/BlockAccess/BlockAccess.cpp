@@ -32,7 +32,7 @@ RecId BlockAccess::linearSearch(int relId, char attrName[ATTR_SIZE], union Attri
         // block = search index's block
         // slot = search index's slot + 1
     block = prevRecId.block;
-    slot = prevRecId.slot + 1;
+    slot = prevRecId.slot +1;
     }
       RelCatEntry relCatBuffer;
         RelCacheTable::getRelCatEntry(relId,&relCatBuffer);
