@@ -77,7 +77,7 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE], char attr
     AttrCatEntry attrCatEntry;
     // get attrCatEntry at offset i using AttrCacheTable::getAttrCatEntry()
     AttrCacheTable::getAttrCatEntry(srcRelId,i,&attrCatEntry);
-    printf(" %s |", attrCatEntry.attrName);
+    std::cout<<attrCatEntry.attrName<<" | ";
   }
   printf("\n");
 

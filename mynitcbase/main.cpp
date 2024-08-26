@@ -24,7 +24,7 @@ void stage2_ex1(){
     int flag=0;
     Attribute relCatRecord[RELCAT_NO_ATTRS];
     relCatBuffer.getRecord(relCatRecord, i);
-
+ 
     printf("Relation: %s\n", relCatRecord[RELCAT_REL_NAME_INDEX].sVal);
 
     // Process all attribute blocks for the current relation
