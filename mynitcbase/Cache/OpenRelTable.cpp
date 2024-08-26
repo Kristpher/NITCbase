@@ -3,22 +3,6 @@
 #include <stdlib.h>
 #include <cstring>
 
-
-
-
-
-AttrCacheEntry *createAttrCacheEntryList(int size) {
-  AttrCacheEntry *head = nullptr, *curr = nullptr;
-  head = curr = (AttrCacheEntry *)malloc(sizeof(AttrCacheEntry));
-  size--;
-  while (size--) {
-    curr->next = (AttrCacheEntry *)malloc(sizeof(AttrCacheEntry));
-    curr = curr->next;
-  }
-  curr->next = nullptr;
-  return head;
-}
-
 OpenRelTableMetaInfo OpenRelTable::tableMetaInfo[MAX_OPEN];
 OpenRelTable::OpenRelTable()
 {
