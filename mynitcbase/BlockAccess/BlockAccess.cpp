@@ -126,3 +126,55 @@ RecId BlockAccess::linearSearch(int relId, char attrName[ATTR_SIZE], union Attri
     return RecId{-1, -1};
 }
 
+// int BlockAccess::renameRelation(char oldName[ATTR_SIZE], char newName[ATTR_SIZE]){
+//     /* reset the searchIndex of the relation catalog using
+//        RelCacheTable::resetSearchIndex() */
+//     RelCacheTable::resetSearchIndex(RELCAT_RELID);
+//     Attribute newRelationName;    // set newRelationName with newName
+//     strcpy(newRelationName.sVal,newName);
+//       RecId recid;
+//     recid=linearSearch(RELCAT_RELID,RELCAT_ATTR_RELNAME,newRelationName,EQ);
+//     if(recid.block!=-1 &&recid.slot!=-1)
+//     return E_RELEXIST
+//     // search the relation catalog for an entry with "RelName" = newRelationName
+
+//     // If relation with name newName already exists (result of linearSearch
+//     //                                               is not {-1, -1})
+//     //    return E_RELEXIST;
+
+
+//     /* reset the searchIndex of the relation catalog using
+//        RelCacheTable::resetSearchIndex() */
+
+//     Attribute oldRelationName;    // set oldRelationName with oldName
+
+//     // search the relation catalog for an entry with "RelName" = oldRelationName
+
+//     // If relation with name oldName does not exist (result of linearSearch is {-1, -1})
+//     //    return E_RELNOTEXIST;
+
+//     /* get the relation catalog record of the relation to rename using a RecBuffer
+//        on the relation catalog [RELCAT_BLOCK] and RecBuffer.getRecord function
+//     */
+//     /* update the relation name attribute in the record with newName.
+//        (use RELCAT_REL_NAME_INDEX) */
+//     // set back the record value using RecBuffer.setRecord
+
+//     /*
+//     update all the attribute catalog entries in the attribute catalog corresponding
+//     to the relation with relation name oldName to the relation name newName
+//     */
+
+//     /* reset the searchIndex of the attribute catalog using
+//        RelCacheTable::resetSearchIndex() */
+
+//     //for i = 0 to numberOfAttributes :
+//     //    linearSearch on the attribute catalog for relName = oldRelationName
+//     //    get the record using RecBuffer.getRecord
+//     //
+//     //    update the relName field in the record to newName
+//     //    set back the record using RecBuffer.setRecord
+
+//     return SUCCESS;
+// }
+

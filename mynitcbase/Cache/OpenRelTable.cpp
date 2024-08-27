@@ -222,12 +222,18 @@ OpenRelTable::~OpenRelTable()
       free(RelCacheTable::relCache[i]);
     }
   }
+  
   // attrcache free karo
 
-  
+    for(int i=0;i< MAX_OPEN;++i){
+    if (AttrCacheTable::attrCache[i]!=nullptr){
+      freeLinkedList(AttrCacheTable::attrCache[i]);
+    }
+  }
+}
 
   // free the memory allocated for rel-id 0 and 1 in the caches
-}
+
 
 /* This function will open a relation having name `relName`.
 Since we are currently only working with the relation and attribute catalog, we
@@ -356,12 +362,10 @@ int OpenRelTable::openRel(char relName[ATTR_SIZE])
     // NOTE: make sure to allocate memory for the AttrCacheEntry using malloc()
   }
   attrCatEntryorg->next = nullptr;
-  
   AttrCacheTable::attrCache[relId] = listHead->next;
   attrCatEntryorg = listHead;
   listHead = listHead->next;
   delete attrCatEntryorg;
-  
   tableMetaInfo[relId].free = false;
   strcpy(tableMetaInfo[relId].relName, relName);
   // set the relIdth entry of the AttrCacheTable to listHead.
@@ -370,24 +374,18 @@ int OpenRelTable::openRel(char relName[ATTR_SIZE])
 
   // update the relIdth entry of the tableMetaInfo with free as false and
   // relName as the input.
- 
-
   return relId;
 }
-
-
 int OpenRelTable::closeRel(int relId)
 {
   if (relId == 0 || relId == 1)
   {
     return E_NOTPERMITTED;
   }
-
   if (relId < 0 || relId >=MAX_OPEN)
   {
     return E_OUTOFBOUND;
   }
-
   if (tableMetaInfo[relId].free)
   {
     return E_RELNOTOPEN;
@@ -409,6 +407,5 @@ int OpenRelTable::closeRel(int relId)
   AttrCacheTable::attrCache[relId] = nullptr;
   // update `tableMetaInfo` to set `relId` as a free slot
   // update `relCache` and `attrCache` to set the entry at `relId` to nullptr
-
   return SUCCESS;
 }
