@@ -48,11 +48,9 @@ int RecBuffer::getRecord(union Attribute *rec, int slotNum) {
     int attrCount = head.numAttrs;
     int slotCount = head.numSlots;
 
-    unsigned char buffer[BLOCK_SIZE];
-    Disk::readBlock(buffer, this->blockNum);
 
     int recordSize = attrCount*ATTR_SIZE;
-    unsigned char *slotPointer = buffer + HEADER_SIZE + slotCount + (recordSize*slotNum);
+    unsigned char *slotPointer = bufferPtr + HEADER_SIZE + slotCount + (recordSize*slotNum);
 
     memcpy(rec, slotPointer, recordSize);
     return SUCCESS;
@@ -65,29 +63,62 @@ int RecBuffer::setRecord(union Attribute *rec, int slotNum) {
     return ret;   // return any errors that might have occured in the process
   }
 
-    struct HeadInfo head;
+     HeadInfo head;
     this->getHeader(&head);
 
     int attrCount = head.numAttrs;
     int slotCount = head.numSlots;
+        if(slotNum>slotCount || slotNum<0){
+      return E_OUTOFBOUND;
+    }
+    // if input slotNum is not in the permitted range return E_OUTOFBOUND.
+
+    /* offset bufferPtr to point to the beginning of the record at required
+       slot. the block contains the header, the slotmap, followed by all
+       the records. so, for example,
+       record at slot x will be at bufferPtr + HEADER_SIZE + (x*recordSize)
+       copy the record from `rec` to buffer using memcpy
+       (hint: a record will be of size ATTR_SIZE * numAttrs)
+    */
+  //  unsigned char buffer[BLOCK_SIZE];
+  // Disk::readBlock(buffer, this->blockNum);
     
-    unsigned char buffer[BLOCK_SIZE];
-    Disk::readBlock(buffer, this->blockNum);
+   
 
     int recordSize = attrCount * ATTR_SIZE;
-    unsigned char *slotPointer = buffer + HEADER_SIZE + slotCount + (recordSize * slotNum);
-   
-   
+    unsigned char *slotPointer = bufferPtr + HEADER_SIZE + slotCount + (recordSize * slotNum);
     memcpy(slotPointer, rec, recordSize);
-    Disk::writeBlock(buffer, blockNum);
+     // update dirty bit using setDirtyBit()
+    int ret1=StaticBuffer::setDirtyBit(this->blockNum);
+    if(ret1!=SUCCESS){
+      std::cout<<"something wrong with the setDirty function";
+    }
+    /* (the above function call should not fail since the block is already
+       in buffer and the blockNum is valid. If the call does fail, there
+       exists some other issue in the code) */
+
+    // return SUCCESS
 
     return SUCCESS;
 }
 int BlockBuffer::loadBlockAndGetBufferPtr(unsigned char **buffPtr) {
   // check whether the block is already present in the buffer using StaticBuffer.getBufferNum()
   int bufferNum = StaticBuffer::getBufferNum(this->blockNum);
-
-  if (bufferNum == E_BLOCKNOTINBUFFER) {
+   // if present (!=E_BLOCKNOTINBUFFER),
+        // set the timestamp of the corresponding buffer to 0 and increment the
+        // timestamps of all other occupied buffers in BufferMetaInfo.
+  if (bufferNum != E_BLOCKNOTINBUFFER) {
+    
+    for(int i=0;i<32;i++){
+   
+      StaticBuffer::metainfo[i].timeStamp++;
+      
+    
+   }
+   StaticBuffer::metainfo[bufferNum].timeStamp = 0;
+  }
+  else
+  {
     bufferNum = StaticBuffer::getFreeBuffer(this->blockNum);
 
     if (bufferNum == E_OUTOFBOUND) {
