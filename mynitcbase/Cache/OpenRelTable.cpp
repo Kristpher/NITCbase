@@ -390,6 +390,15 @@ int OpenRelTable::closeRel(int relId)
   {
     return E_RELNOTOPEN;
   }
+ 
+  if(RelCacheTable::relCache[relId]->dirty==true)
+  {  
+      Attribute record[RELCAT_NO_ATTRS];
+      RelCacheTable::relCatEntryToRecord(&(RelCacheTable::relCache[relId]->relCatEntry),record);
+      RecId recId =RelCacheTable::relCache[relId]->recId;
+      RecBuffer relCatBlock(recId.block);
+      relCatBlock.setRecord(record, RelCacheTable::relCache[relId]->recId.slot);
+  }
   free(RelCacheTable::relCache[relId]);
   AttrCacheEntry *head = AttrCacheTable::attrCache[relId];
   AttrCacheEntry *next = head->next;
