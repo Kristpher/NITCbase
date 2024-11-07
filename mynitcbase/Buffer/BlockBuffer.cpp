@@ -21,7 +21,9 @@ BlockBuffer::BlockBuffer(char blockType)
     blocktype = REC;
   else
     blocktype = UNUSED_BLK;
+
   int block_num = getFreeBlock(blocktype);
+
   if (block_num < 0 || block_num >= DISK_BLOCKS)
   {
     std::cout << "Error: Block is not available\n";
@@ -37,6 +39,24 @@ BlockBuffer::BlockBuffer(char blockType)
   // (The caller must check if the constructor allocatted block successfully
   // by checking the value of block number field.)
 }
+// call the corresponding parent constructor
+IndBuffer::IndBuffer(char blockType) : BlockBuffer(blockType){}
+
+
+// call the corresponding parent constructor
+IndBuffer::IndBuffer(int blockNum) : BlockBuffer(blockNum){}
+
+IndInternal::IndInternal() : IndBuffer('I') {}
+IndInternal::IndInternal(int blockNum) : IndBuffer(blockNum) {}
+
+IndLeaf::IndLeaf() : IndBuffer('L'){} 
+// this is the way to call parent non-default constructor.                      // 'L' used to denote IndLeaf.
+
+
+//this is the way to call parent non-default constructor.
+IndLeaf::IndLeaf(int blockNum) : IndBuffer(blockNum){}
+
+
 
 int BlockBuffer::getHeader(struct HeadInfo *head)
 {
@@ -138,7 +158,7 @@ int BlockBuffer::loadBlockAndGetBufferPtr(unsigned char **buffPtr)
   if (bufferNum != E_BLOCKNOTINBUFFER)
   {
 
-    for (int i = 0; i < 32; i++)
+    for (int i = 0; i < BUFFER_CAPACITY; i++)
     {
 
       StaticBuffer::metainfo[i].timeStamp++;
@@ -265,14 +285,15 @@ int BlockBuffer::getFreeBlock(int blockType)
       break;
     }
   }
-  if (blk_num == DISK_BLOCKS)
+  if (blk_num == DISK_BLOCKS){
     return E_DISKFULL;
+  }
   // if no block is free, return E_DISKFULL.
   this->blockNum = blk_num;
   // set the object's blockNum to the block number of the free block.
 
   // find a free buffer using StaticBuffer::getFreeBuffer() .
-  int bufferNum = StaticBuffer::getFreeBuffer(this->blockNum);
+  int bufferNum = StaticBuffer::getFreeBuffer(blk_num);
   if (bufferNum < 0 || bufferNum >= BUFFER_CAPACITY)
   {
     printf("Error:buffer is full\n");
@@ -284,7 +305,7 @@ int BlockBuffer::getFreeBlock(int blockType)
   struct HeadInfo header;
   header.pblock = -1;
   header.lblock = -1;
-  header.lblock = -1;
+  header.rblock = -1;
   header.numEntries = 0;
   header.numAttrs = 0;
   header.numSlots = 0;
@@ -317,6 +338,7 @@ int RecBuffer::setSlotMap(unsigned char *slotMap)
   getHeader(&head);
   int numSlots = head.numSlots; /* the number of slots in the block */
   ;
+  
   memcpy(bufferPtr + HEADER_SIZE, slotMap, numSlots);
   // the slotmap starts at bufferPtr + HEADER_SIZE. Copy the contents of the
   // argument `slotMap` to the buffer replacing the existing slotmap.
@@ -364,4 +386,81 @@ void BlockBuffer::releaseBlock(){
         // to UNUSED_BLK.
 
         // set the object's blockNum to INVALID_BLOCK (-1)
+}
+
+
+
+int IndInternal::getEntry(void *ptr, int indexNum) {
+    // if the indexNum is not in the valid range of [0, MAX_KEYS_INTERNAL-1]
+    //     return E_OUTOFBOUND.
+    if(indexNum<0 || indexNum>MAX_KEYS_INTERNAL)
+    return E_OUTOFBOUND;
+    unsigned char *bufferPtr;
+    /* get the starting address of the buffer containing the block
+       using loadBlockAndGetBufferPtr(&bufferPtr). */
+     int ret=loadBlockAndGetBufferPtr(&bufferPtr);
+     if(ret!=SUCCESS)
+     return ret;
+    // if loadBlockAndGetBufferPtr(&bufferPtr) != SUCCESS
+    //     return the value returned by the call.
+
+    // typecast the void pointer to an internal entry pointer
+    struct InternalEntry *internalEntry = (struct InternalEntry *)ptr;
+
+    /*
+    - copy the entries from the indexNum`th entry to *internalEntry
+    - make sure that each field is copied individually as in the following code
+    - the lChild and rChild fields of InternalEntry are of type int32_t
+    - int32_t is a type of int that is guaranteed to be 4 bytes across every
+      C++ implementation. sizeof(int32_t) = 4
+    */
+
+    /* the indexNum'th entry will begin at an offset of
+       HEADER_SIZE + (indexNum * (sizeof(int) + ATTR_SIZE) )         [why?]
+       from bufferPtr */
+    unsigned char *entryPtr = bufferPtr + HEADER_SIZE + (indexNum * 20);
+
+    memcpy(&(internalEntry->lChild), entryPtr, sizeof(int32_t));
+    memcpy(&(internalEntry->attrVal), entryPtr + 4, sizeof(Attribute));
+    memcpy(&(internalEntry->rChild), entryPtr + 20, 4);
+
+     return SUCCESS;
+}
+
+
+int IndLeaf::getEntry(void *ptr, int indexNum) {
+
+    // if the indexNum is not in the valid range of [0, MAX_KEYS_LEAF-1]
+    //     return E_OUTOFBOUND.
+
+
+    if(indexNum<0 || indexNum>MAX_KEYS_LEAF)
+    return E_OUTOFBOUND;
+
+    unsigned char *bufferPtr;
+    /* get the starting address of the buffer containing the block
+       using loadBlockAndGetBufferPtr(&bufferPtr). */
+        int ret=loadBlockAndGetBufferPtr(&bufferPtr);
+        if(ret!=SUCCESS)
+        return ret;
+
+    // if loadBlockAndGetBufferPtr(&bufferPtr) != SUCCESS
+    //     return the value returned by the call.
+
+    // copy the indexNum'th Index entry in buffer to memory ptr using memcpy
+
+    /* the indexNum'th entry will begin at an offset of
+       HEADER_SIZE + (indexNum * LEAF_ENTRY_SIZE)  from bufferPtr */
+    unsigned char *entryPtr = bufferPtr + HEADER_SIZE + (indexNum * LEAF_ENTRY_SIZE);
+    memcpy((struct Index *)ptr, entryPtr, LEAF_ENTRY_SIZE);
+
+    return SUCCESS;
+}
+
+int IndInternal::setEntry(void *ptr, int indexNum) {
+  return 0;
+}
+
+int IndLeaf::setEntry(void *ptr, int indexNum) {
+  return 0;
 }

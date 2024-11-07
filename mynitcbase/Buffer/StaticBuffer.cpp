@@ -47,28 +47,44 @@ StaticBuffer::~StaticBuffer() {
 int StaticBuffer::getFreeBuffer(int blockNum) {
      // Check if blockNum is valid (non zero and less than DISK_BLOCKS)
     // and return E_OUTOFBOUND if not valid.
-    if(blockNum<0 ||blockNum>DISK_BLOCKS)
-    return E_OUTOFBOUND;
+    if(blockNum<0 || blockNum>DISK_BLOCKS)
+      return E_OUTOFBOUND;
+
     int allocatedBuffer=-1;
     int timestamp=0;
     int maxim=0;
-    for(int bufferIndex=0;bufferIndex<BUFFER_CAPACITY;bufferIndex++){
-      if(metainfo[bufferIndex].timeStamp>timestamp){
-        timestamp=metainfo[bufferIndex].timeStamp;
-        maxim=bufferIndex;
+
+    for (int z=0;z<MAX_OPEN;++z ){
+      if(metainfo[z].free != false){
+        metainfo[z].timeStamp+=1;
       }
+    }
+
+    for(int bufferIndex=0;bufferIndex<BUFFER_CAPACITY;bufferIndex++){
+
+
       if(metainfo[bufferIndex].free)
       {
         allocatedBuffer=bufferIndex;
         break;
       }
 
+
+      if(metainfo[bufferIndex].timeStamp>timestamp){
+        timestamp=metainfo[bufferIndex].timeStamp;
+        maxim=bufferIndex;
+      }
+      
+
     }
-       if(allocatedBuffer==-1){
+    
+      if(allocatedBuffer==-1){
       if(metainfo[maxim].dirty==true){
        Disk::writeBlock(blocks[maxim],metainfo[maxim].blockNum);
-       allocatedBuffer=maxim;
       }
+
+      allocatedBuffer=maxim;
+      
         }
 
     metainfo[allocatedBuffer].blockNum=blockNum;
@@ -141,4 +157,15 @@ int StaticBuffer::setDirtyBit(int blockNum){
     //     set the dirty bit of that buffer to true in metainfo
 
      return SUCCESS;
+}
+
+
+int StaticBuffer::getStaticBlockType(int blockNum){
+    // Check if blockNum is valid (non zero and less than number of disk blocks)
+    if(blockNum<0 || blockNum>DISK_BLOCKS)
+    return E_OUTOFBOUND;
+    // and return E_OUTOFBOUND if not valid.
+    return (int)blockAllocMap[blockNum];
+    // Access the entry in block allocation map corresponding to the blockNum argument
+    // and return the block type after type casting to integer.
 }

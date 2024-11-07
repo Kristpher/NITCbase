@@ -188,9 +188,9 @@ int Schema::deleteRel(char *relName) {
     // get the rel-id using appropriate method of OpenRelTable class by
     // passing relation name as argument
        int relId = OpenRelTable::getRelId(relName);
-       std::cout<<"\n the upcoming value will be relid"<<relId<<std::endl;
+       //std::cout<<"\n the upcoming value will be relid"<<relId<<std::endl;
     // if relation is opened in open relation table, return E_RELOPEN
-        if (relId >= 0 && relId < MAX_OPEN) return E_RELOPEN;
+        if (relId > 0 && relId < MAX_OPEN) return E_RELOPEN;
         int retVal=BlockAccess::deleteRelation(relName);
     // Call BlockAccess::deleteRelation() with appropriate argument.
         return retVal;

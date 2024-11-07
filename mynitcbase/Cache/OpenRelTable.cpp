@@ -356,6 +356,7 @@ int OpenRelTable::openRel(char relName[ATTR_SIZE])
   Attribute attrVal;
   strcpy(attrVal.sVal, relName);
   // std::cout<<attrVal.sVal<<"Open:285";
+  
   RelCacheTable::resetSearchIndex(RELCAT_RELID);
   relcatRecId = BlockAccess::linearSearch(RELCAT_RELID, RELCAT_ATTR_RELNAME, attrVal, EQ);
   
