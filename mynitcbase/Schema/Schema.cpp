@@ -103,9 +103,10 @@ int Schema::createRel(char relName[],int nAttrs, char attrs[][ATTR_SIZE],int att
     //     return E_DUPLICATEATTR (i.e 2 attributes have same value)
     for(int i=0;i<nAttrs;i++){
       for(int j=i+1;j<nAttrs;j++)
-      {
+      {  
         if(strcmp(attrs[i],attrs[j])==0)
         {
+          std::cout<<"creatrel schema"<<std::endl;
           return E_DUPLICATEATTR;
         }
       }
@@ -176,7 +177,6 @@ int Schema::createRel(char relName[],int nAttrs, char attrs[][ATTR_SIZE],int att
 
     return SUCCESS;
 }
-
 int Schema::deleteRel(char *relName) {
     // if the relation to delete is either Relation Catalog or Attribute Catalog,
     //     return E_NOTPERMITTED
@@ -202,4 +202,63 @@ int Schema::deleteRel(char *relName) {
        correct, it should not reach that point. That error could only occur
        if the BlockBuffer was initialized with an invalid block number.
     */
+}
+
+
+int Schema::createIndex(char relName[ATTR_SIZE],char attrName[ATTR_SIZE]){
+    // if the relName is either Relation Catalog or Attribute Catalog,
+           if (strcmp(relName,RELCAT_RELNAME) ==0 || strcmp(relName,ATTRCAT_RELNAME) == 0){
+           return E_NOTPERMITTED;
+    }
+        // return E_NOTPERMITTED
+        // (check if the relation names are either "RELATIONCAT" and "ATTRIBUTECAT".
+        // you may use the following constants: RELCAT_RELNAME and ATTRCAT_RELNAME)
+       int relid=OpenRelTable::getRelId(relName);
+     // get the relation's rel-id using OpenRelTable::getRelId() method
+        if(relid==E_RELNOTOPEN)
+        return relid;
+    // if relation is not open in open relation table, return E_RELNOTOPEN
+    // (check if the value returned from getRelId function call = E_RELNOTOPEN)
+
+    // create a bplus tree using BPlusTree::bPlusCreate() and return the value
+    return BPlusTree::bPlusCreate(relid, attrName);
+}
+
+int Schema::dropIndex(char *relName, char *attrName) {
+    // if the relName is either Relation Catalog or Attribute Catalog,
+        // return E_NOTPERMITTED
+        if(relName==RELCAT_RELNAME || relName==ATTRCAT_RELNAME)
+        return E_NOTPERMITTED;
+        // (check if the relation names are either "RELATIONCAT" and "ATTRIBUTECAT".
+        // you may use the following constants: RELCAT_RELNAME and ATTRCAT_RELNAME)
+
+    // get the rel-id using OpenRelTable::getRelId()
+        int relid=OpenRelTable::getRelId(relName);
+    // if relation is not open in open relation table, return E_RELNOTOPEN
+    // (check if the value returned from getRelId function call = E_RELNOTOPEN)
+        if(relid==E_RELNOTOPEN)
+        return relid;
+    // get the attribute catalog entry corresponding to the attribute
+    // using AttrCacheTable::getAttrCatEntry()
+    AttrCatEntry attrCatEntry;
+    AttrCacheTable::getAttrCatEntry(relid,attrName,&attrCatEntry);
+
+    // if getAttrCatEntry() fails, return E_ATTRNOTEXIST
+
+    int rootBlock = attrCatEntry.rootBlock;
+    /* get the root block from attrcat entry */;
+
+    if (rootBlock==-1/* attribute does not have an index (rootBlock = -1) */) {
+        return E_NOINDEX;
+    }
+
+    // destroy the bplus tree rooted at rootBlock using BPlusTree::bPlusDestroy()
+    BPlusTree::bPlusDestroy(rootBlock);
+     rootBlock=-1;
+     attrCatEntry.rootBlock=rootBlock;
+     AttrCacheTable::setAttrCatEntry(relid,attrName,&attrCatEntry);
+    // set rootBlock = -1 in the attribute cache entry of the attribute using
+    // AttrCacheTable::setAttrCatEntry()
+
+    return SUCCESS;
 }
