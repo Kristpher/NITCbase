@@ -568,14 +568,14 @@ int BlockAccess::search(int relId, Attribute *record, char attrName[ATTR_SIZE], 
     RecId recId;
 
 
-    //shit that was before this
+  
 
     // /* search for the record id (recid) corresponding to the attribute with
     // attribute name attrName, with value attrval and satisfying the condition op
     // using linearSearch() */
     // recId = BlockAccess::linearSearch(relId, attrName, attrVal, op);
 
-    //end of shit
+
 
 
 
