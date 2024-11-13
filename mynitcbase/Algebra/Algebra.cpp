@@ -249,8 +249,7 @@ int Algebra::project(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE]) {
     while (BlockAccess::project(srcRelId,record) == SUCCESS)
     {
         // record will contain the next record
-        
-        // ret = BlockAccess::insert(targetRelId, proj_record);
+       // ret = BlockAccess::insert(targetRelId, proj_record);
         ret =  BlockAccess::insert(targetRelId,record);
         if (ret!=SUCCESS) {
             // close the targetrel by calling Schema::closeRel()
@@ -264,8 +263,7 @@ int Algebra::project(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE]) {
         // Close the targetRel by calling Schema::closeRel()
     Schema::closeRel(targetRel);
     return SUCCESS;
-   
-}
+   }
 
 
 int Algebra::project(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE], int tar_nAttrs, char tar_Attrs[][ATTR_SIZE]) {
